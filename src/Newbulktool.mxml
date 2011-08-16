@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" preloader="preload.CustomPreloader"
+			   xmlns:s="library://ns.adobe.com/flex/spark"  
+			   xmlns:mx="library://ns.adobe.com/flex/mx"  creationComplete="bulktool_init();" minWidth="955" minHeight="600" xmlns:local="*">
+	<fx:Script>
+		<![CDATA[
+			import itemrenderer.atgbethit;
+			import itemrenderer.coortholgsrenderer;
+			import itemrenderer.orthologsrenderer;
+			import itemrenderer.pubesthit;
+			import itemrenderer.puinputrenderer;
+			import itemrenderer.pyGOrender;
+
+		]]> 
+	</fx:Script>
+	<fx:Declarations><!---->
+		<mx:HTTPService id="serve_getConfigData" 
+						resultFormat="text"
+						url="bulktools.json"
+						result="handle_config_files(event)" />
+		<mx:HTTPService id="serve_getTranscriptData"  
+						useProxy="false"          
+						method="GET"
+						showBusyCursor="true" 
+						result="transcriptDataResult(event)"
+						fault="transcriptDataResultFault(event)"
+						resultFormat="text" />
+		<mx:HTTPService id="serve_idconversionData"  
+						useProxy="false"          
+						method="GET"
+						showBusyCursor="true" 
+						result="idconversionDataResult(event)"
+						fault="transcriptDataResultFault(event)"
+						resultFormat="text" />
+		<s:RadioButtonGroup   id="controlboxRadio"/>
+		<s:RadioButtonGroup   id="subcontrolboxRadio"/>
+		<mx:WipeUp id="wipeup" duration="500"/>
+		<mx:WipeDown id="wipedown" duration="500"/>
+		<mx:WipeRight id="showme" duration="400"/>
+		<mx:WipeLeft id="hideme" duration="400"/> 
+	</fx:Declarations>
+	<fx:Script source="NewBulkTool.as"></fx:Script>
+	<fx:Style source="style.css"/>
+	<!--Functional Annotation Grid-->
+	<mx:AdvancedDataGrid   variableRowHeight="true"  showEffect="{showme}" hideEffect="{hideme}" id="functionalannotationdg" visible="{geneinfoChk.selected}"  width="100%" height="100%">
+		<mx:groupedColumns>
+			<mx:AdvancedDataGridColumn dataField="id" headerText="ID">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:Box horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									protected function linkbutton1_clickHandler(event:MouseEvent):void{
+										var URL:String = "http://popgenie.org/transcript/"+data.id;
+										navigateToURL(new URLRequest(URL), "_blank");
+									}
+								]]>
+							</fx:Script>
+							<mx:LinkButton color="blue" textDecoration="underline" click="linkbutton1_clickHandler(event)"  label="{data.id}"/>            
+						</mx:Box>
+					</fx:Component>                        
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn editorDataField="result" itemEditor="itemrenderer.Gorenderer" itemRenderer="itemrenderer.Gorenderer" dataField="GO" headerText="AgriGO">
+				
+		<!--		<mx:itemRenderer>
+					<fx:Component>
+						<mx:Canvas  width="20" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									import events.GoEvent;
+									protected function linkbutton1_clickHandler():void{
+										var e : GoEvent=new GoEvent(GoEvent.popupGo,true,false,data.GO,data.id);
+										outerDocument.dispatchEvent(e);
+									}
+								
+									private var a:Array=new Array(); 
+								
+									public override function set data(value:Object):void{
+										gotxt.htmlText="";
+										super.data = value;
+										if(value == null){
+											gotxt.htmlText = '';
+											return;
+										}
+										var str:String =value.GO;
+										if(str!=null){
+										var pattern1:RegExp = /[||]/gi;
+										str=str.replace(pattern1,"");
+										var pattern:RegExp = /GO:/gi;
+										a = str.replace(pattern, " ").split(/\s+/);
+										for(var h:int=1;h<a.length;h++){
+										gotxt.htmlText+='<a target="_blank" href="http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=GO:'+a[h]+'"><font color="#0000FF">GO:'+a[h]+'</font></a>\n'
+											
+										}
+										gotxt.validateNow();
+										gotxt.height=gotxt.textHeight+5;
+										data.GO=gotxt.text;
+										}else{
+										//	gotxt.text="";
+										}
+									}
+														
+								]]>
+							</fx:Script>
+							<mx:TextArea  contentBackgroundAlpha="0" styleName="textareaextendfont" id="gotxt"  verticalScrollPolicy="off" horizontalScrollPolicy="off" wordWrap="true" borderVisible="false" editable="false" width="100%"   />  
+					</mx:Canvas>
+					</fx:Component>                        
+				</mx:itemRenderer>-->
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn editorDataField="result" itemEditor="itemrenderer.pyGOrender" itemRenderer="itemrenderer.pyGOrender" dataField="pyGO" headerText="Phytozome GO"/>
+			<mx:AdvancedDataGridColumn  dataField="PeptideName" headerText="PeptideName"/>
+		</mx:groupedColumns>
+	</mx:AdvancedDataGrid>
+	<!--Potein Grid-->
+	<mx:VBox width="100%"  height="100%">
+		<mx:AdvancedDataGrid  variableRowHeight="true" showEffect="{showme}" hideEffect="{hideme}" width="100%"  id="sequencedg" visible="{sequenceChk.selected}"   height="100%">
+			<mx:groupedColumns>
+				<mx:AdvancedDataGridColumn   visible="false"   dataField="id"  headerText="Id" />
+				<mx:AdvancedDataGridColumn visible="false" dataField="transcriptSeq" headerText="Transcrip Sequence"/>	
+			</mx:groupedColumns>
+		</mx:AdvancedDataGrid>
+	</mx:VBox>
+	<!--populus genome-->
+	<mx:AdvancedDataGrid variableRowHeight="true" draggableColumns="false" allowMultipleSelection="true"  showEffect="{showme}" hideEffect="{hideme}"  width="100%" id="populusdg" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==0}"  height="100%">
+		<mx:groupedColumns>
+			<mx:AdvancedDataGridColumn dataField="id" headerText="v2.2">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									protected function linkbutton1_clickHandler(event:MouseEvent):void{
+										var URL:String = "http://popgenie.org/transcript/"+data.id+".1";
+										navigateToURL(new URLRequest(URL), "_blank");
+									}
+									protected function addtomainTxt(event:MouseEvent):void{
+										outerDocument.inputTranscripttxt.text=data.id+".1";
+									}
+								]]>
+							</fx:Script>
+							<mx:LinkButton color="blue"  click="linkbutton1_clickHandler(event)"  label="{data.id}"/> 
+						</mx:HBox>
+					</fx:Component>                        
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn  dataField="v20" id="v20Column"   headerText="v2.0"/>	
+			<mx:AdvancedDataGridColumn  dataField="v11" id="v11Column"   headerText="v1.1"/>	
+			<mx:AdvancedDataGridColumn  dataField="v10" id="v10Column"   headerText="v1.0"/>	
+		</mx:groupedColumns>
+	</mx:AdvancedDataGrid>	
+	<!--atg-->
+	<mx:AdvancedDataGrid  variableRowHeight="true" draggableColumns="false" allowMultipleSelection="true"  showEffect="{showme}" hideEffect="{hideme}"  width="100%" id="atgdg" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==1}"  height="100%">
+		<mx:groupedColumns>
+			<mx:AdvancedDataGridColumn  dataField="atginput" id="atgColumn"   headerText="ATG Input"/>
+		<!--	<mx:AdvancedDataGridColumn  dataField="atg" id="atgColumn"   headerText="ATG"/>	-->
+			<mx:AdvancedDataGridColumn    dataField="id" headerText="GM">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									protected function linkbutton1_clickHandler(event:MouseEvent):void{
+										var URL:String = "http://popgenie.org/transcript/"+data.id+".1";
+										navigateToURL(new URLRequest(URL), "_blank");
+									}
+									protected function addtomainTxt(event:MouseEvent):void{
+										outerDocument.inputTranscripttxt.text=data.id+".1";
+									}
+								]]>
+							</fx:Script>
+							<mx:LinkButton color="blue"  click="linkbutton1_clickHandler(event)"  label="{data.id}"/> 
+						</mx:HBox>
+					</fx:Component>                        
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn itemRenderer="itemrenderer.orthologsrenderer" id="orthologsColumn" dataField="orthologs"  headerText="Orthologs"/>	
+			<mx:AdvancedDataGridColumn itemRenderer="itemrenderer.coortholgsrenderer"  id="coorthologsColumn"  dataField="coorthologs" headerText="Coorthologs"/>
+			<mx:AdvancedDataGridColumn itemRenderer="itemrenderer.atgoverlap"  dataField="overlap" id="overlapColumn"   headerText="Overlap"/>
+			<mx:AdvancedDataGridColumn itemRenderer="itemrenderer.atgbethit" dataField="besthit" id="besthitsColumn"   headerText="Best Blast Hits"/>
+		</mx:groupedColumns>
+	</mx:AdvancedDataGrid>
+	<!--pu-->
+	<mx:AdvancedDataGrid    variableRowHeight="true" showEffect="{showme}" hideEffect="{hideme}" width="100%"  id="pudg" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==2}"   height="100%">
+		<mx:groupedColumns>
+			<!--<mx:AdvancedDataGridColumn visible="false" dataField="id" headerText="ID"/>-->
+	<!--		<mx:AdvancedDataGridColumn visible="false"  dataField="id"  headerText="v2.2" />-->
+			<mx:AdvancedDataGridColumn itemRenderer="itemrenderer.puinputrenderer"  dataField="puinput" headerText="PU Input"/>
+			<mx:AdvancedDataGridColumn  itemRenderer="itemrenderer.genebankinput" dataField="gbinput" headerText="GeneBank Input"/>
+			
+			<mx:AdvancedDataGridColumn itemRenderer="itemrenderer.pubesthit" dataField="pu" headerText="Best Blast Hits"/>
+
+			<mx:AdvancedDataGridColumn  dataField="id"  headerText="v2.2" >
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									protected function linkbutton1_clickHandler(event:MouseEvent):void{
+										var URL:String = "http://popgenie.org/transcript/"+data.id+".1";
+										navigateToURL(new URLRequest(URL), "_blank");
+									}
+									protected function addtomainTxt(event:MouseEvent):void{
+										outerDocument.inputTranscripttxt.text=data.id+".1";
+									}
+								]]>
+							</fx:Script>
+							<mx:LinkButton color="blue"  click="linkbutton1_clickHandler(event)"  label="{data.id}"/> 
+						</mx:HBox>
+					</fx:Component>                        
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+		<!--	<mx:AdvancedDataGridColumn itemRenderer="GenebankItemrenderer"   dataField="genebank"  headerText="Genebank" />-->
+		</mx:groupedColumns>
+	</mx:AdvancedDataGrid>
+	<!--pu expand genome-->
+	<mx:AdvancedDataGrid variableRowHeight="true" draggableColumns="false" allowMultipleSelection="true"  showEffect="{showme}" hideEffect="{hideme}"  width="100%" id="puexpanddg" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==3}"  height="100%">
+		<mx:groupedColumns>
+			<mx:AdvancedDataGridColumn  dataField="puinput" headerText="PU Input"/>
+			<mx:AdvancedDataGridColumn itemRenderer="itemrenderer.genebankinput"   dataField="gbinput" headerText="GeneBank Input"/>
+			<mx:AdvancedDataGridColumn  dataField="pu" itemRenderer="itemrenderer.pubesthit"  headerText="Best Blast Hits"/>
+			<!--<mx:AdvancedDataGridColumn  dataField="plate" headerText="384 Plate"/>-->
+			<mx:AdvancedDataGridColumn dataField="id" headerText="v2.2">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									protected function linkbutton1_clickHandler(event:MouseEvent):void{
+										var URL:String = "http://popgenie.org/transcript/"+data.id+".1";
+										navigateToURL(new URLRequest(URL), "_blank");
+									}
+									protected function addtomainTxt(event:MouseEvent):void{
+										outerDocument.inputTranscripttxt.text=data.id+".1";
+									}
+								]]>
+							</fx:Script>
+							<mx:LinkButton color="blue"  click="linkbutton1_clickHandler(event)"  label="{data.id}"/> 
+						</mx:HBox>
+					</fx:Component>                        
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+	<!--		<mx:AdvancedDataGridColumn itemRenderer="GenebankItemrenderer"   dataField="genebank"  headerText="Genebank" />-->
+			<!--<mx:AdvancedDataGridColumn itemRenderer="puexpand"  dataField="pu" headerText="PU"/>-->
+		</mx:groupedColumns>
+	</mx:AdvancedDataGrid>	
+	<!--gb-->
+	<mx:AdvancedDataGrid   variableRowHeight="true" showEffect="{showme}" hideEffect="{hideme}" width="100%"  id="gbdg" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==4}"   height="100%">
+		<mx:groupedColumns>
+			<!--<mx:AdvancedDataGridColumn visible="false" dataField="id" headerText="ID"/>-->
+			<!--		<mx:AdvancedDataGridColumn visible="false"  dataField="id"  headerText="v2.2" />-->
+			<mx:AdvancedDataGridColumn   dataField="gbinput" headerText="GeneBank Input"/>
+			<mx:AdvancedDataGridColumn   dataField="gbinput" headerText="GeneBank Overlap"/>
+			
+			<!--<mx:AdvancedDataGridColumn itemRenderer="itemrenderer.pubesthit" dataField="pu" headerText="Best Blast Hits"/>-->
+			
+			<mx:AdvancedDataGridColumn  dataField="id"  headerText="v2.2" />
+			<!--	<mx:AdvancedDataGridColumn itemRenderer="GenebankItemrenderer"   dataField="genebank"  headerText="Genebank" />-->
+		</mx:groupedColumns>
+	</mx:AdvancedDataGrid>	
+	<mx:Canvas   showEffect="wipedown" hideEffect="wipeup" id="controlBox" visible="{controlboxBoolean}" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-350}"  width="700" height="230" backgroundColor="#FFFF99" >
+	<!--<mx:Image   source="@Embed(source='preload/pop1.png')"  right="2" top="2"/>-->
+		<s:TextArea fontWeight="bold" alpha="0.8" borderVisible="false" visible="{!conversionChk.selected}" focusColor="#000000" focusedTextSelectionColor="#FF9900"  color="#000000"  text="POPTR_0005s08110.1
+					POPTR_0020s00420.1
+					POPTR_0008s02470.1
+					POPTR_0004s15090.1
+					POPTR_0006s01090.1
+					POPTR_0006s17670.1 
+					POPTR_0010s19220.1
+					POPTR_0010s08310.1
+					POPTR_0001s18120.1" id="inputTranscripttxt" width="481" height="199" bottom="10" x="10"/>
+		<mx:TextArea fontWeight="bold"  focusColor="#000000" alpha="0.8" borderVisible="false" visible="{conversionChk.selected}" color="#000000" id="overlapttxt" width="481" height="199" bottom="10" x="10"/>	
+		<s:Label fontWeight="bold" id="casee" visible="{conversionChk.selected}"  y="5" text="Conversion Ids:" top="7" x="15"/>
+		<s:Label fontWeight="bold" visible="{!conversionChk.selected}"  y="5" text="v2.2 Transcrip Ids:" top="7" x="15"/>
+		<s:Button visible="{!conversionChk.selected}" click="submitTranscript_clickHandler();" label="Submit"  x="511" bottom="15"/>
+		<mx:Image click="handleExportClick()"  id="csvbtn"  width="42" height="20" buttonMode="true" source="@Embed(source='assets/icon-csv.png')"  x="597" bottom="14"/>
+		
+		<s:RadioButton x="515"   id="geneinfoChk"  bottom="140" label="Gene Information" groupName="controlboxRadio"/>
+		<s:RadioButton x="515"  id="sequenceChk"  bottom="115" label="Sequence" groupName="controlboxRadio"/>	
+		<s:RadioButton x="515"  id="conversionChk" bottom="90" label="ID Conversion" groupName="controlboxRadio"/>	
+		<mx:Button id="closeButton" buttonMode="true" click="{subcontrolboxBoolean=false;controlboxBoolean=false;}"  styleName="closeButton" useHandCursor="true"  x="675" y="210"/>
+	
+	<mx:HBox x="515" bottom="60" visible="{conversionChk.selected &amp;&amp; subcontrolboxBoolean}">
+		<s:DropDownList change="conversionCombo_changeHandler()" fontWeight="bold" id="conversionCombo" prompt="Select"   width="125">
+			<mx:ArrayCollection>
+				<fx:String>Populus Genome</fx:String>
+				<fx:String>ATG</fx:String>
+				<fx:String>PU-Collapse</fx:String>
+				<fx:String>PU-Expand</fx:String>
+		<!--		<fx:String>GeneBank-Collapse</fx:String>
+				<fx:String>GeneBank-Expand</fx:String>-->
+			</mx:ArrayCollection>
+		</s:DropDownList>
+		<mx:Button  click="idconversionsubmitClick();" width="40" fontWeight="bold" label="Go"  />
+	</mx:HBox>
+
+	</mx:Canvas>
+	<mx:HBox paddingTop="10" backgroundColor="#FFFF99" showEffect="wipedown" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-300}" y="230" width="600" height="70" hideEffect="wipeup"  id="geneinfoBox" visible="{geneinfoChk.selected &amp;&amp; subcontrolboxBoolean}"  >
+		<local:CheckBoxes />
+	</mx:HBox>
+	<mx:HBox paddingTop="10" backgroundColor="#FFFF99" showEffect="wipedown" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-300}" y="230" width="600" height="70" hideEffect="wipeup" id="sequenceBox" visible="{sequenceChk.selected  &amp;&amp; subcontrolboxBoolean}" >
+		<mx:VBox paddingLeft="20">
+			<mx:RadioButton  click="subsequenceChange();" id="fastaproteinChk"  bottom="134" label="Sequence Peptide" groupName="subcontrolboxRadio"/>
+			<mx:RadioButton click="subsequenceChange()"  id="fastatranscriptChk" bottom="114" label="Sequence transcript" groupName="subcontrolboxRadio"/>
+		</mx:VBox>
+		<mx:VBox paddingLeft="10">
+			<mx:RadioButton click="subsequenceChange()" id="fastacdsChk" bottom="134" label="Sequence Coding" groupName="subcontrolboxRadio"/>
+			<mx:RadioButton click="subsequenceChange()" id="scaffoldsequenceChk" bottom="134" label="Genomic Sequence" groupName="subcontrolboxRadio"/>
+		</mx:VBox>
+		<mx:VBox paddingLeft="15">
+			<mx:RadioButton id="upstreamChk" click="subsequenceChange()"   label="Upstream flank" groupName="subcontrolboxRadio"/>
+			<mx:RadioButton id="downstreamChk" click="subsequenceChange()"  label="Downstream flank" groupName="subcontrolboxRadio"/>
+		</mx:VBox>
+		<mx:VBox paddingTop="5" verticalGap="15">
+			<s:HSlider  id="upstreamSlider"  change="upstreamChk.selected=true;seqChk_changeHandler();" minimum="100"  maximum="2000" stepSize="100" value="2000" width="100" />
+			<s:HSlider id="downstreamSlider"  change="downstreamChk.selected=true;seqChk_changeHandler();"  minimum="100"  maximum="2000" stepSize="100" value="2000" width="100"/>
+		</mx:VBox>
+		<mx:VBox paddingTop="5" verticalGap="15">
+			<s:Label fontWeight="bold" text="{upstreamSlider.value.toString()}" />
+			<s:Label fontWeight="bold" text="{downstreamSlider.value.toString()}" />
+		</mx:VBox>
+	</mx:HBox>
+	<mx:HBox paddingTop="20" paddingLeft="5" backgroundColor="#FFFF99" showEffect="wipedown" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-325}" y="230" width="650" height="70" hideEffect="wipeup" id="conversionBox" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==0 &amp;&amp; subcontrolboxBoolean}">
+		<local:CheckBoxes />
+		<!--<s:DropDownList fontWeight="bold" id="conversionCombo" prompt="Populus Genome" selectedIndex="0"  width="150">
+			<mx:ArrayCollection>
+				<fx:String>Populus Genome</fx:String>
+				<fx:String>ATG</fx:String>
+				<fx:String>PU</fx:String>
+			</mx:ArrayCollection>
+		</s:DropDownList>
+		<mx:Button styleName="translatedButton"/>
+		<mx:Label fontWeight="bold" id="tlabel"  textAlign="left"	text="v2.2"/>
+		<s:Button  click="idconversionsubmitClick();"  fontWeight="bold" label="Convert"  />	-->
+	</mx:HBox>
+	<mx:HBox paddingTop="20" paddingLeft="5" backgroundColor="#FFFF99" showEffect="wipedown" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-325}" y="230" width="650" height="70" hideEffect="wipeup" id="conversionBox1" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==1 &amp;&amp; subcontrolboxBoolean}">
+		<local:CheckBoxes id="poppulusmainchk" />
+		</mx:HBox>
+	<mx:HBox paddingTop="20" paddingLeft="5" backgroundColor="#FFFF99" showEffect="wipedown" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-325}" y="230" width="650" height="70" hideEffect="wipeup" id="conversionBox2" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==2 &amp;&amp; subcontrolboxBoolean}">
+		<local:CheckBoxes id="atgmainchk" />
+	</mx:HBox>
+	<mx:HBox paddingTop="20" paddingLeft="5" backgroundColor="#FFFF99" showEffect="wipedown" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-325}" y="230" width="650" height="70" hideEffect="wipeup" id="conversionBox3" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==3 &amp;&amp; subcontrolboxBoolean}">
+		<local:CheckBoxes id="pumainchk" />
+	</mx:HBox>
+	<mx:VBox paddingTop="0" paddingLeft="5" backgroundColor="#FFFF99" showEffect="wipedown" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-325}" y="230" width="650" height="70" hideEffect="wipeup" id="conversionBox4" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==4 &amp;&amp; subcontrolboxBoolean}">
+		<s:Label fontWeight="bold" color="red" text="Test Data"/>
+		<local:CheckBoxes id="puexpandmainchk" />
+	</mx:VBox>
+	<mx:VBox paddingTop="5" paddingLeft="5" backgroundColor="#FFFF99" showEffect="wipedown" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-325}" y="230" width="650" height="70" hideEffect="wipeup" id="conversionBox5" visible="{conversionChk.selected &amp;&amp; conversionCombo.selectedIndex==5 &amp;&amp; subcontrolboxBoolean}">
+		<s:Label fontWeight="bold" color="red" text="Test Data"/>
+		<local:CheckBoxes id="puexpandmainchks" />
+	</mx:VBox>	
+	<mx:Image showEffect="wipedown" hideEffect="wipeup" width="25" toolTip="Show Control" height="25" buttonMode="true" source="@Embed(source='assets/down.png')" visible="{!controlboxBoolean}" click="{controlboxBoolean=true;subcontrolboxBoolean=true;}" x="{this.parent.width/2+320}" y="-2"/>
+	<mx:Box backgroundColor="red" y="30" width="200" right="{this.width/2-100}" visible="false" id="alertBox"/>
+</s:Application>

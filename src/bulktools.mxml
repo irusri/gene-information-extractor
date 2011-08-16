@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="bulktool_init();" minWidth="955" minHeight="600" xmlns:custom="com.ib.custom.*" xmlns:local="*">
+	<fx:Declarations>
+		<mx:HTTPService id="serve_getConfigData" 
+						resultFormat="text"
+						url="bulktools.json"
+						result="handle_config_files(event)" />
+		<mx:HTTPService id="serve_getTranscriptData"  
+						useProxy="false"          
+						method="GET"
+						showBusyCursor="true" 
+						result="transcriptDataResult(event)"
+						fault="transcriptDataResultFault(event)"
+						resultFormat="text" />
+		<mx:HTTPService id="serve_getOverlapData"  
+						useProxy="false"          
+						method="GET"
+						showBusyCursor="true" 
+						result="overlapDataResult(event)"
+						fault="transcriptDataResultFault(event)"
+						resultFormat="text" />
+		
+		<s:RadioButtonGroup  enabled="{startArray.length!=0?true:false}"  id="bulktoolsradio"/>
+		<s:RadioButtonGroup   id="bulktoolsradio2"/>
+		<mx:WipeUp id="wipeup" duration="500"/>
+		<mx:WipeDown id="wipedown" duration="500"/>
+		<mx:WipeRight id="showme" duration="400"/>
+		<mx:WipeLeft id="hideme" duration="400"/>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		@font-face { 
+			src: url("COUR.TTF"); 
+			fontFamily: btFontFamily; 
+			embedAsCFF: false; 
+			color:#00ff00;
+		}
+		.textareafont{
+			fontFamily: btFontFamily;
+			font-size:12;
+			font-thickness:200;
+			font-sharpness:-50;
+			font-grid-fit-type:subpixel;
+		}
+		.clearFilterButton {
+			icon: Embed(source="/assets/close.png");
+			skin: ClassReference(null); 
+		}
+		.translateButton {
+			icon: Embed(source="/assets/translate.png");
+			overIcon: Embed(source="/assets/translate2.png");
+			skin: ClassReference(null); 
+		}
+		.translatedButton{
+			icon: Embed(source="/assets/onet.png");
+			skin: ClassReference(null); 
+		}
+	</fx:Style>
+	<fx:Script source="Bulktoolsmain.as"></fx:Script>
+	<!--Functional Annotation Grid-->
+	<mx:AdvancedDataGrid   showEffect="{showme}" hideEffect="{hideme}" id="functionalannotationdg" visible="{functionalannotationdgBoolean}"  width="100%" height="100%">
+		<mx:groupedColumns>
+			<mx:AdvancedDataGridColumn dataField="id" headerText="ID">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:Box horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									protected function linkbutton1_clickHandler(event:MouseEvent):void{
+										var URL:String = "http://130.239.72.85/popgenie2/transcript/"+data.id;
+										navigateToURL(new URLRequest(URL), "_blank");
+									}
+								]]>
+							</fx:Script>
+							<mx:LinkButton color="blue" textDecoration="underline" click="linkbutton1_clickHandler(event)"  label="{data.id}"/>            
+						</mx:Box>
+					</fx:Component>                        
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn  dataField="GO" headerText="GO">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:Canvas width="20" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									import events.GoEvent;
+									protected function linkbutton1_clickHandler():void{
+									
+										var e : GoEvent=new GoEvent(GoEvent.popupGo,true,false,data.GO,data.id);
+										outerDocument.dispatchEvent(e);
+									//	outerDocument.dispatchEvent(new CustomEvent(CustomEvent.popupGo,true,false,data.GO))
+										//var URL:String = "http://130.239.72.85/popgenie2/transcript/"+data.id;
+										//navigateToURL(new URLRequest(URL), "_blank");
+									}
+									[Bindable]
+									private var a:Array;//=new Array(); 
+									private function complete():void{
+										var str:String =data.GO;
+										var pattern1:RegExp = /[||]/gi;
+										str=str.replace(pattern1,"");
+										var pattern:RegExp = /GO:/gi;
+										a = str.replace(pattern, " ").split(/\s+/);
+										//var a:Array = str.split(/GO:/);
+										for(var h:int=1;h<a.length;h++){
+											//Alert.show(a[h]);
+											gotxt.htmlText+='<a target="_blank" href="http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=GO:'+a[h]+'"><font color="#0000FF">GO:'+a[h]+'</font></a>\n'
+											
+										}
+										
+									}
+									
+									
+								]]>
+							</fx:Script>
+							<mx:TextArea   creationComplete="complete()" id="gotxt"  verticalScrollPolicy="off" horizontalScrollPolicy="off" wordWrap="true" borderVisible="false" editable="false" width="100%" height="70"  />  
+						<!--	<mx:Button  alpha="1" color="blue" bottom="0" right="0" click="linkbutton1_clickHandler();"  width="35" visible="{data.GO!=''}" label=">>"/> 
+					-->	</mx:Canvas>
+					</fx:Component>                        
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn  dataField="PeptideName" headerText="PeptideName"/>
+	</mx:groupedColumns>
+	</mx:AdvancedDataGrid>
+	<!--Potein Grid-->
+	<mx:VBox width="100%"  height="100%">
+		<mx:AdvancedDataGrid showEffect="{showme}" hideEffect="{hideme}" width="100%" selectionColor="#FFFFFF" rollOverColor="#FFFFFF" id="fastaproteindg" visible="{fastaproteindgBoolean}"   height="100%">
+			<mx:groupedColumns>
+				<mx:AdvancedDataGridColumn dataField="id"  headerText="Protein" >
+					<mx:itemRenderer>
+						<fx:Component>
+							<mx:VBox height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+								<fx:Script>
+									<![CDATA[
+										import events.AlertEvent;
+										import AlertTimer;
+										public var myAlert:AlertTimer = new AlertTimer();
+										
+										protected function linkbutton1_clickHandler(event:MouseEvent):void{
+											var URL:String = "http://130.239.72.85/popgenie2/transcript/"+data.id;
+											navigateToURL(new URLRequest(URL), "_blank");
+										}
+										protected function proteincopytoClipboard():void{
+											System.setClipboard('>>'+data.id+'\n'+data.peptideSeq);
+										//	outerDocument.alertString="copied to clipboard";
+											//myAlert.backgroundColor="#ffffff";
+											myAlert.show(this.outerDocument.alertBox,"copied to clipboard.", false);
+										//	var e : AlertEvent=new AlertEvent(AlertEvent.alertShow,true,false,outerDocument.alertString);
+										//	outerDocument.dispatchEvent(e);
+										}
+									]]>
+								</fx:Script>
+								<mx:LinkButton color="blue" textDecoration="underline" click="linkbutton1_clickHandler(event)"  label="{'>>'+data.id}"/> 
+								<mx:TextArea id="proteinTxt" doubleClickEnabled="true" doubleClick="proteincopytoClipboard();" styleName="textareafont" editable="false" borderAlpha="0"    wordWrap="true" horizontalScrollPolicy="off" verticalScrollPolicy="off" width="100%" height="100"  text="{data.peptideSeq}"/> 
+							</mx:VBox>
+						</fx:Component>                        
+					</mx:itemRenderer>
+				</mx:AdvancedDataGridColumn>
+				<mx:AdvancedDataGridColumn visible="false" dataField="transcriptSeq" headerText="Transcrip Sequence"/>	
+			</mx:groupedColumns>
+		</mx:AdvancedDataGrid>
+	</mx:VBox>
+	<!--Transcript Grid-->
+	<mx:VBox width="100%"  height="100%">
+		<mx:AdvancedDataGrid  showEffect="{showme}" hideEffect="{hideme}" selectionColor="#FFFFFF" rollOverColor="#FFFFFF" width="100%" height="100%"  id="fastatranscriptdg" visible="{fastatranscriptdgBoolean}" >
+			<mx:groupedColumns>
+				<mx:AdvancedDataGridColumn dataField="id" headerText="Transcript">
+					<mx:itemRenderer>
+						<fx:Component>
+							<mx:VBox  height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+								<fx:Script>
+									<![CDATA[
+										import events.AlertEvent;
+										import AlertTimer;
+										public var myAlert:AlertTimer = new AlertTimer();
+										
+										protected function linkbutton1_clickHandler(event:MouseEvent):void{
+											var URL:String = "http://130.239.72.85/popgenie2/transcript/"+data.id;
+											navigateToURL(new URLRequest(URL), "_blank");
+										}
+										protected function fastacopytoClipboard():void{
+											System.setClipboard('>>'+data.id+'\n'+data.transcriptSeq);
+											//outerDocument.alertString="copied to clipboard";
+											myAlert.show(this.outerDocument.alertBox,"copied to clipboard.", false);
+											//var e : AlertEvent=new AlertEvent(AlertEvent.alertShow,true,false,outerDocument.alertString);
+											//outerDocument.dispatchEvent(e);	
+										}										
+									]]>
+								</fx:Script>
+								<mx:LinkButton color="blue" textDecoration="underline" click="linkbutton1_clickHandler(event)"  label="{'>>'+data.id}"/> 
+								<mx:TextArea id="fastaTxt"  doubleClickEnabled="true" doubleClick="fastacopytoClipboard();" styleName="textareafont" editable="false" borderAlpha="0"   wordWrap="true"  horizontalScrollPolicy="off" verticalScrollPolicy="off" width="100%" height="100"  text="{data.transcriptSeq}"/> 
+							</mx:VBox>
+						</fx:Component>                        
+					</mx:itemRenderer>
+				</mx:AdvancedDataGridColumn>
+				<mx:AdvancedDataGridColumn visible="false" dataField="transcriptSeq" headerText="Transcrip Sequence"/>	
+			</mx:groupedColumns>
+		</mx:AdvancedDataGrid>
+	</mx:VBox>
+	<mx:ToggleButtonBar visible="false"  id="pageNav"   width="{fastatranscriptdg.width}"></mx:ToggleButtonBar>
+	<!--Hits Ath Hit Grid-->
+	<mx:AdvancedDataGrid  showEffect="{showme}" hideEffect="{hideme}"  width="100%" id="hitstdg" visible="false"  height="100%">
+		<mx:groupedColumns>
+			<mx:AdvancedDataGridColumn  dataField="id" headerText="Transcript">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:VBox height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									protected function linkbutton1_clickHandler(event:MouseEvent):void{
+										var URL:String = "http://130.239.72.85/popgenie2/transcript/"+data.id;
+										navigateToURL(new URLRequest(URL), "_blank");
+									}
+								]]>
+							</fx:Script>
+							<mx:LinkButton color="blue" textDecoration="underline" click="linkbutton1_clickHandler(event)"  label="{data.id}"/> 
+						</mx:VBox>
+					</fx:Component>                        
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn  headerText="Overlapping TAIR models"/>	
+			<mx:AdvancedDataGridColumn  headerText="Coorthologs"/>
+			<mx:AdvancedDataGridColumn  headerText="Orthologs"/>
+			<mx:AdvancedDataGridColumn  headerText="Phytozome Ath"/>
+		</mx:groupedColumns>
+	</mx:AdvancedDataGrid>
+	<!--Overlap-->
+	
+	<local:IBDataGrid draggableColumns="false" allowMultipleSelection="true"  showEffect="{showme}" hideEffect="{hideme}"  width="100%" id="overlapdg" visible="{overlapBoolean}"  height="100%">
+		<local:groupedColumns>
+			
+			<mx:AdvancedDataGridColumn headerRenderer="itemrenderer.headercheckbox"   dataField="id" headerText="v2.2">
+				<mx:itemRenderer>
+					<fx:Component>
+						<mx:HBox height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+							<fx:Script>
+								<![CDATA[
+									protected function linkbutton1_clickHandler(event:MouseEvent):void{
+										var URL:String = "http://130.239.72.85/popgenie2/transcript/"+data.id+".1";
+										navigateToURL(new URLRequest(URL), "_blank");
+									}
+									protected function addtomainTxt(event:MouseEvent):void{
+										outerDocument.inputTranscripttxt.text=data.id+".1";
+									}
+								]]>
+							</fx:Script>
+							<mx:LinkButton color="blue"  click="linkbutton1_clickHandler(event)"  label="{data.id}"/> 
+							
+						</mx:HBox>
+					</fx:Component>                        
+				</mx:itemRenderer>
+			</mx:AdvancedDataGridColumn>
+			<mx:AdvancedDataGridColumn  dataField="v10" id="secondColumn"   headerText="{overlapSecondHeader}"/>	
+		</local:groupedColumns>
+	</local:IBDataGrid >	
+	<mx:Canvas   showEffect="wipedown" hideEffect="wipeup" id="functBox" visible="{functBoxBoolean}" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-350}"  width="700" height="230" backgroundColor="#FFFF99" >
+		<s:TextArea fontWeight="bold" alpha="0.8" borderVisible="false" focusColor="#000000" focusedTextSelectionColor="#FF9900" visible="{!overlapBoolean}" color="#000000"  text="POPTR_0005s08110.1
+					POPTR_0020s00420.1
+					POPTR_0008s02470.1
+					POPTR_0004s15090.1
+					POPTR_0006s01090.1
+					POPTR_0006s17670.1 
+					POPTR_0010s19220.1
+					POPTR_0010s08310.1
+					POPTR_0001s18120.1" id="inputTranscripttxt" width="481" height="199" bottom="10" x="10"/>
+		
+		<s:TextArea fontWeight="bold"  focusColor="#000000" focusedTextSelectionColor="#FF9900" alpha="0.8" borderVisible="false" visible="{overlapBoolean}" color="#000000"  text="fgenesh1_pg.C_scaffold_127000072" id="overlapttxt" width="481" height="199" bottom="10" x="10"/>	
+		<s:Label fontWeight="bold" id="casee" visible="{overlapBoolean &amp;&amp; tlabel.text!='ATG'}"  y="5" text="{ overlapSecondHeader +' ids:'}" top="7" x="15"/>
+		<s:Label fontWeight="bold" visible="{casee.visible==true?false:true}"  y="5" text="v2.2 ids:" top="7" x="15"/>
+		<s:Button  visible="{!overlapBoolean}" label="Submit"  click="submitTranscript_clickHandler()" x="511" bottom="15"/>
+		<mx:Image  id="csvbtn" visible="{bulktoolsradio.selectedValue!=null?true:false}" width="42" height="20" buttonMode="true" source="@Embed(source='assets/icon-csv.png')" click="handleExportClick()" x="597" bottom="14"/>
+		<s:RadioButton x="520" id="functcchk" change="{falseall();seqpchkBoolean=false;functcchk.selected==true?functionalannotationdgBoolean=true:functionalannotationdgBoolean=false;}" bottom="130" label="Gene Information" groupName="bulktoolsradio"/>
+		<s:RadioButton x="520" enabled="true" id="seqpchk" change="{falseall();fproteinchk.selected=false;ftranscriptchk.selected=false;seqpchk.selected==true?seqpchkBoolean=true:seqpchkBoolean=false;}" bottom="105" label="Sequence" groupName="bulktoolsradio"/>	
+		<s:RadioButton x="520" enabled="true" id="overlapchk" change="{falseall();seqpchkBoolean=false;overlapchk.selected==true?overlapBoolean=true:overlapBoolean=false;}" bottom="80" label="ID Conversion" groupName="bulktoolsradio"/>	
+	<mx:Button buttonMode="true"  styleName="clearFilterButton" useHandCursor="true" click="{functBoxBoolean==true?functBoxBoolean=false:functBoxBoolean=true;}" x="675" y="210"/>
+		<s:DropDownList change="headerChange();" id="overlapCombo" prompt="v1.0" selectedIndex="0" visible="{overlapBoolean}" x="522" y="157" width="62">
+			<mx:ArrayCollection>
+				<fx:String>v1.0</fx:String>
+				<fx:String>v1.1</fx:String>
+				<fx:String>v2.0</fx:String>
+				<fx:String>PU</fx:String>
+				<fx:String>ATG</fx:String>
+				<fx:String>v2.2</fx:String>
+			</mx:ArrayCollection>
+		</s:DropDownList>
+		<mx:Button  visible="{overlapBoolean &amp;&amp; !tvisible}" y="158"  x="587"	styleName="translatedButton"/>
+		<mx:Button  id="tbutton" click="translateClick();" buttonMode="true" visible="{overlapBoolean &amp;&amp; tvisible}" y="158"  x="587"	styleName="translateButton"/>
+		<mx:Label id="tlabel" y="158" visible="{overlapBoolean}" x="617" textAlign="left"	text="v2.2"/>
+		<s:Button x="650" width="42" visible="{overlapBoolean}" y="157" label="GO"  click="overlap_clickHandler()" />
+	</mx:Canvas>
+	<mx:Box showEffect="wipedown" hideEffect="wipeup" id="functBoxext" visible="{functionalannotationdgBoolean &amp;&amp; functBoxBoolean}" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-300}" y="230" width="600" height="70" backgroundColor="#FFFF99">
+		<mx:VBox paddingTop="10">
+			<!--change="{kogchk.selected==true?addRemoveColumns('kog'):addRemoveColumns('pfam');}"-->
+	
+			<mx:HBox >
+				<mx:CheckBox change="{addRemoveColumns(event)}"  id="kog" paddingLeft="20" label="KOG"/>
+				<mx:CheckBox  change="{addRemoveColumns(event)}"  id="panther"  paddingLeft="20" label="PANTHER"/>
+				<mx:CheckBox  change="{addRemoveColumns(event)}"  id="pfam" paddingLeft="20" label="PFAM"/>
+				<mx:CheckBox  change="{addRemoveColumns(event)}"  id="atg" paddingLeft="20" label="ATG"/>
+				<mx:CheckBox  change="{addRemoveColumns(event)}"  id="description" paddingLeft="24" label="Description"/>
+				<mx:CheckBox paddingLeft="20" change="{addRemoveColumns(event)}"  id="pac" label="PAC  "/>
+				<mx:CheckBox paddingLeft="20" change="{addRemoveColumns(event)}"  id="ec" label="EC "/>
+			</mx:HBox>
+		<mx:HBox>
+			
+		<mx:CheckBox paddingLeft="20" change="{addRemoveColumns(event)}"  id="keg" label="KEG"/>
+			<mx:CheckBox paddingLeft="20" change="{addRemoveColumns(event)}"  id="synonyms" label="Synonyms"/>
+		
+			<mx:CheckBox paddingLeft="20" change="{addRemoveColumns(event)}"  id="strand" label="Strand "/>
+			<mx:CheckBox paddingLeft="20" change="{addRemoveColumns(event)}"  id="transcriptstart" label="Start"/>
+			<mx:CheckBox paddingLeft="20" change="{addRemoveColumns(event)}"  id="transcriptstop" label="Stop"/>
+			<mx:CheckBox paddingLeft="20" change="{addRemoveColumns(event)}"  id="chromosome" label="Chromosome "/>
+			
+		
+		</mx:HBox>
+		</mx:VBox>
+	</mx:Box>
+	
+	<mx:HBox showEffect="wipedown" hideEffect="wipeup" id="seqBoxext" visible="{seqpchkBoolean &amp;&amp;  functBoxBoolean}" cornerRadius="5" horizontalScrollPolicy="off" verticalScrollPolicy="off" x="{this.parent.width/2-300}" y="230" width="600" height="70" backgroundColor="#FFFF99">
+		<mx:VBox paddingTop="10">
+			<!--change="{kogchk.selected==true?addRemoveColumns('kog'):addRemoveColumns('pfam');}"-->
+			<mx:RadioButton paddingLeft="20"  x="520" id="fproteinchk"  change="{falseall();fproteinchk.selected==true?fastaproteindgBoolean=true:fastaproteindgBoolean=false;}" bottom="134" label="Fasta Protein" groupName="bulktoolsradio2"/>
+			<mx:RadioButton paddingLeft="20"  x="520" id="ftranscriptchk" change="{falseall();ftranscriptchk.selected==true?fastatranscriptdgBoolean=true:fastatranscriptdgBoolean=false;}" bottom="114" label="Fasta Transcript" groupName="bulktoolsradio2"/>
+			
+		</mx:VBox>
+		<mx:VBox paddingTop="10">
+			<mx:RadioButton paddingLeft="20"  x="520" id="fproteinchk1"  change="{falseall();fproteinchk.selected==true?fastaproteindgBoolean=true:fastaproteindgBoolean=false;}" bottom="134" label="Upstream 2000" groupName="bulktoolsradio2"/>
+			<mx:RadioButton paddingLeft="20"  x="520" id="ftranscriptchk1" change="{falseall();ftranscriptchk.selected==true?fastatranscriptdgBoolean=true:fastatranscriptdgBoolean=false;}" bottom="114" label="Downstream 2000" groupName="bulktoolsradio2"/>
+
+			</mx:VBox>
+	</mx:HBox>
+	<mx:Image showEffect="wipedown" hideEffect="wipeup" width="25" toolTip="Show Control" height="25" buttonMode="true" source="@Embed(source='assets/down.png')" visible="{functBoxBoolean==false?true:false}" click="{functBoxBoolean==false?functBoxBoolean=true:functBoxBoolean=false;}"  x="{this.parent.width/2+320}" y="-2"/>
+	<mx:TextInput  borderColor="Black" borderAlpha="0.8"   borderStyle="solid" visible="{bulktoolsradio.selectedValue!=null?true:false}" bottom="0" left="5" id="txt" text="Filter by Transcript Id.." focusOut="resetMyTextInput()" change="filter();" focusIn="clearMyTextInput();" />
+	<mx:TextInput  borderColor="Black" borderAlpha="0.8"   borderStyle="solid" visible="{overlapBoolean}" bottom="0" right="5" focusIn="{overlaptxt.text='';}" id="overlaptxt" focusOut="overlapresetMyTextInput();" text="{'Filter by '+overlapSecondHeader+' id..'}" change="overlapfilter();"  />
+	<mx:Box backgroundColor="red" y="30" width="200" right="{this.width/2-100}" visible="false" id="alertBox">
+		
+	</mx:Box>
+</s:Application>

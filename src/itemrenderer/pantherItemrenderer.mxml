@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXAdvancedDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+								  xmlns:s="library://ns.adobe.com/flex/spark" 
+								  xmlns:mx="library://ns.adobe.com/flex/mx" 
+								  height="100%" width="100%">
+	<fx:Script>
+		<![CDATA[
+			import mx.rpc.events.ResultEvent;
+		]]>
+	</fx:Script>
+	<!--	<s:Label id="lblData" top="0" left="0" right="0" bottom="0" text="{listData.label}" />-->
+	<mx:Canvas  width="100%"  height="100%" horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<fx:Script>
+			<![CDATA[
+				
+				import mx.containers.Box;
+				private var alertbox:Box;
+				import events.AlertEvent;
+				
+				public var myAlert:AlertTimer = new AlertTimer();
+				[Bindable]
+				private var a:Array=new Array(); 
+				
+				protected function proteincopytoClipboard():void{
+					System.setClipboard(data.panther);
+					this.alertbox = (this.parentDocument as Newbulktool).alertBox;
+					myAlert.show(this.alertbox,data.id + " copied to clipboard.", false);
+					
+				}
+				
+				public var result:String="";
+				
+				public override function set data(value:Object):void{
+					panthertxt.htmlText="";
+					super.data = value;
+					if(value == null){
+						panthertxt.htmlText = '';
+						return;
+					}
+					var str:String =value.panther;
+					if(str!=null){
+						var pattern:RegExp = /;/gi;
+						//	pfamtxt.htmlText=str.replace(pattern, ";\n");
+						a = str.replace(pattern, " ").split(/\s+/);
+						for(var h:int=0;h<a.length;h++){
+						panthertxt.htmlText+='<a target="_blank" href="http://www.pantherdb.org/panther/family.do?clsAccession='+a[h]+'"><font color="#0000FF">'+a[h]+'</font></a>\n';
+							
+							
+						}
+						panthertxt.validateNow();
+						panthertxt.height=panthertxt.textHeight+5;
+						//	data.pfam=pfamtxt.text;
+						//}else{
+						//pfamtxt.text="";
+					}
+					
+					
+					
+				}
+			]]>
+		</fx:Script>
+		<mx:TextArea   contentBackgroundAlpha="0" id="panthertxt"  doubleClickEnabled="true" doubleClick="proteincopytoClipboard();"   styleName="textareaextendfont" editable="false" borderAlpha="0"    wordWrap="true" horizontalScrollPolicy="off" verticalScrollPolicy="off" width="100%"   /> 
+		<!--<mx:TextArea text="{data.pu}" styleName="textareafont" editable="false" borderAlpha="0"  borderVisible="false" contentBackgroundAlpha="0" visible="{data.id=='No'}"/>-->
+	</mx:Canvas>
+</s:MXAdvancedDataGridItemRenderer>

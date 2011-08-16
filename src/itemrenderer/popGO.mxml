@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="titlecomplete();" width="500" height="400" showCloseButton="true" title="{poptrid}"  close="titleWindow_close(event);">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+		
+		[Bindable]
+		public var goValue:String;
+		[Bindable]
+		public var poptrid:String;			
+		
+		private function titlecomplete():void {
+				
+		var str:String =goValue;
+		var pattern1:RegExp = /[||]/gi;
+		str=str.replace(pattern1,"");
+		var pattern:RegExp = /GO:/gi;
+		var a:Array = str.replace(pattern, " ").split(/\s+/);
+		//var a:Array = str.split(/GO:/);
+			for(var h:int=0;h<a.length;h++){
+				//Alert.show(a[h]);
+				gotxt.htmlText+='<a target="_blank" href="http://amigo.geneontology.org/cgi-bin/amigo/term_details?term=GO:'+a[h]+'"><font color="#0000FF">GO:'+a[h]+'</font></a>  '
+			
+			}
+		}
+			
+		private function titleWindow_close(evt:CloseEvent):void {
+		PopUpManager.removePopUp(this);
+		}
+		]]>
+	</fx:Script>
+	<mx:TextArea borderVisible="false" editable="false" id="gotxt" width="100%" height="80%"/>
+	<mx:HRule width="100%" height="2"/>
+	<mx:TextArea  borderVisible="false" editable="false" text="Go Description here" width="100%" height="20%"/>
+</mx:TitleWindow>

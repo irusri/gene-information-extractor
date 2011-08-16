@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:MXAdvancedDataGridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+								  xmlns:s="library://ns.adobe.com/flex/spark" 
+								  xmlns:mx="library://ns.adobe.com/flex/mx" 
+								  height="100%" width="100%">
+	<!--	<s:Label id="lblData" top="0" left="0" right="0" bottom="0" text="{listData.label}" />-->
+	<mx:VBox  width="100%" height="100%"  horizontalScrollPolicy="off" verticalScrollPolicy="off">
+		<fx:Script>
+			<![CDATA[
+				import events.AlertEvent;
+				import mx.containers.Box;
+				public var myAlert:AlertTimer = new AlertTimer();
+				private var alertbox:Box;
+				[bindable]
+				private var a:Array=new Array(); 
+				protected function linkbutton1_clickHandler(event:MouseEvent):void{
+					var URL:String = "http://130.239.72.85/popgenie2/transcript/"+data.id;
+					navigateToURL(new URLRequest(URL), "_blank");
+				}
+				protected function proteincopytoClipboard():void{
+					System.setClipboard(data.puoverlap);
+					this.alertbox = (this.parentDocument as Newbulktool).alertBox;
+					myAlert.show(this.alertbox,data.id + " copied to clipboard.", false);
+					
+				}
+						
+				
+				public override function set data(value:Object):void{
+					puoverlapTxt.htmlText="";
+					super.data = value;
+					if(value == null){
+						puoverlapTxt.htmlText = '';
+						return;
+					}
+					if(data.puoverlap!=""){
+						var str:String =data.puoverlap;
+						//var pattern1:RegExp = /[|]/gi;
+						//str=str.replace(pattern1,"");
+						var pattern:RegExp = /;/gi;
+						a = str.replace(pattern, " ").split(/\s+/);
+						for(var h:int=0;h<a.length;h++){
+							puoverlapTxt.htmlText+=a[h]+';\n'
+							
+						}
+						puoverlapTxt.htmlText=puoverlapTxt.htmlText.replace(/;/gi,"");
+						puoverlapTxt.validateNow();
+						puoverlapTxt.height=puoverlapTxt.textHeight+5;
+						//data.puoverlap=puoverlapTxt.text;
+					}
+					
+					//	myText = "I think I am "+;
+					
+				}
+				
+			]]>
+		</fx:Script>
+		<!--<mx:LinkButton fontWeight="bold" color="blue" textDecoration="underline"   label="{'>>'+data.id}"/> -->
+		<mx:TextArea  contentBackgroundAlpha="0"  id="puoverlapTxt"   doubleClickEnabled="true"  doubleClick="proteincopytoClipboard();" styleName="textareaextendfont" editable="false" borderAlpha="0"    wordWrap="true" horizontalScrollPolicy="off" verticalScrollPolicy="off" width="100%"   /> 
+	</mx:VBox>
+</s:MXAdvancedDataGridItemRenderer>

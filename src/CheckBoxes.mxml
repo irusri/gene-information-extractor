@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+		//	[Bindable]
+		//	private var nbt=this.parentDocument as Newbulktool;
+			
+			
+		]]>
+	</fx:Script>
+	<mx:VBox paddingLeft="10">
+		<mx:CheckBox change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}" id="kog" label="KOG"/>
+		<mx:CheckBox change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="panther"  label="PANTHER"/>
+	</mx:VBox>
+	<mx:VBox>	
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="pfam" label="PFAM"/>
+		<mx:HBox>
+			<mx:CheckBox width="10"  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="atg" label="Phytozome ATG"/>
+			<s:Label paddingTop="5" text="ATG" fontWeight="bold"/>
+		</mx:HBox>
+		
+	</mx:VBox>
+	<mx:VBox>
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="description" label="Description"/>
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="pac" label="PAC"/>
+	</mx:VBox>
+	<mx:VBox>
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="ec" label="EC "/>
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="ko" label="KO"/>
+	</mx:VBox>
+	<mx:VBox>
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="synonyms" label="Synonyms"/>
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="strand" label="Strand "/>
+	</mx:VBox>
+	<mx:VBox>
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="transcriptstart" label="Start"/>
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="transcriptstop" label="Stop"/>
+	</mx:VBox>	
+	<mx:VBox>
+		<mx:CheckBox  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="chromosome" label="Chromosome"/>
+		<mx:Canvas>
+			
+		<mx:CheckBox  visible="{(this.parentDocument as Newbulktool).pudg.visible  || (this.parentDocument as Newbulktool).puexpanddg.visible}" change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="puoverlap" label="PU Overlap"/>
+		<mx:CheckBox  visible="{!(this.parentDocument as Newbulktool).pudg.visible &amp;&amp; !(this.parentDocument as Newbulktool).puexpanddg.visible}" change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="pu" label="PU"/>
+		
+
+		</mx:Canvas>
+		
+	</mx:VBox>
+	<mx:VBox>
+		<!--
+		<mx:CheckBox visible="{(this.parentDocument as Newbulktool).conversionChk.selected &amp;&amp; !(this.parentDocument as Newbulktool).atgdg.visible}"  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="GO" label="GO"/>
+	-->	
+		
+		<mx:CheckBox visible="{(this.parentDocument as Newbulktool).conversionChk.selected}"  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="GO" label="AgriGO"/>
+		<mx:Canvas>
+		<mx:CheckBox  visible="{(this.parentDocument as Newbulktool).pudg.visible  || (this.parentDocument as Newbulktool).puexpanddg.visible}"  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}"  id="genebank" label="GeneBank"/>
+		<mx:CheckBox   visible="{!genebank.visible  &amp;&amp; (this.parentDocument as Newbulktool).conversionChk.selected }" id="pyGO"  change="{(this.parentDocument as Newbulktool).addRemoveColumns(event)}" fontSize="10"  toolTip="Phytozome GO"  label="Phytozome GO"/>
+			</mx:Canvas>
+	</mx:VBox>
+</mx:HBox>

@@ -1,0 +1,14 @@
+{
+  "settings": {
+        "value": 19,
+        "policy_file": "http://localhost/crossdomain.xml",
+         "url": "http://130.239.131.199/bulktoolService/test2.php",
+         "overlapurl": "http://130.239.131.199/bulktoolService/populusversion.php",
+         "overlapurlatg": "http://130.239.131.199/bulktoolService/atg.php",
+          "overlapurlpu": "http://130.239.131.199/bulktoolService/pu.php",
+          "overlapurlgb": "http://130.239.131.199/bulktoolService/gb.php",
+           "scaffoldsequence": "http://130.239.131.199/bulktoolService/scaffoldsequence.php"
+              
+    }
+    
+}

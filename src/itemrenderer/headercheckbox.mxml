@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:fx="http://ns.adobe.com/mxml/2009" horizontalAlign="center" width="100%" verticalAlign="middle"
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" >
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+
+
+	<fx:Script>
+		<![CDATA[
+			
+			import events.SendToBulkToolEvent;
+		
+		[Embed(source="assets/CS.png")]
+		[Bindable]
+		public var sale:Class; 
+			private var tmpString:String="yes";
+			
+			private var bt:bulktools;//=new bulktools();
+			
+			public function selecterOfAll():void
+			{
+				//if(tmpString=="yes"){
+					var e : SendToBulkToolEvent=new SendToBulkToolEvent(SendToBulkToolEvent.sendtobulkTool,true,false,"yes");
+					dispatchEvent(e);
+					tmpString="no";
+				/* }else{
+					 e =new CheckBoxEvent(CheckBoxEvent.chbox,true,false,"no");
+					dispatchEvent(e);
+					tmpString=="yes";
+				} */
+				
+			
+			}		
+
+		]]>
+	</fx:Script>
+	
+	<mx:Label text="v2.2"/>
+	<!--<s:CheckBox id="chk" change="selecterOfAll();" label="Select All"/>-->
+	<mx:Button id="submitbulk" click="selecterOfAll();"  label="send to bulk tools"/>
+	<!--<mx:Image height="20" source="{sale}"/>-->
+</mx:HBox>

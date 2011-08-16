@@ -1,0 +1,93 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+@font-face { 
+	src: url("COUR.TTF"); 
+	fontFamily: btFontFamily; 
+	embedAsCFF: false; 
+	color:#00ff00;
+}
+@font-face { 
+	src: url("GillSans_Regular.ttf"); 
+	fontFamily: gillsans; 
+	embedAsCFF: false; 
+	color:#000000;
+}
+.textareafont{
+	fontFamily: btFontFamily;
+	font-size:12;
+	font-thickness:200;
+	font-sharpness:-50;
+	font-grid-fit-type:subpixel;
+}
+.closeButton {
+	icon: Embed(source="/assets/close.png");
+	skin: ClassReference(null); 
+}
+.translateButton {
+	icon: Embed(source="/assets/translate.png");
+	overIcon: Embed(source="/assets/translate2.png");
+	skin: ClassReference(null); 
+}
+.translatedButton{
+	icon: Embed(source="/assets/onet.png");
+	skin: ClassReference(null); 
+}
+s|RadioButton{
+	font-weight:bold;
+}
+mx|CheckBox{
+	font-weight:bold;
+}
+mx|RadioButton{
+	font-weight:bold;
+}
+/*mx|AdvancedDataGrid{
+	
+	border-style: none;
+	selection-color: #FFFFFF;
+	roll-over-color: #C1FFC5;
+	alternating-item-colors: #F4FBFF, #FFFFFF;
+
+}
+.goTextArea{
+	font-weight:bold;
+	selection-color: #7CFF77;
+	roll-over-color: #C1FFC5;
+	text-roll-over-color:#7CFF77;
+	
+		
+	}*/
+mx|AdvancedDataGrid{
+	
+	fontFamily: gillsans;
+	font-size:12;
+	font-thickness:-105;
+	font-sharpness:-400;
+	font-anti-alias-type:advanced;
+}
+.goTextArea{
+	font-weight:bold;
+
+	
+}
+.textareaextendfont{
+	fontFamily: gillsans;
+	font-size:12;
+	font-thickness:-105;
+	font-sharpness:-400;
+	font-anti-alias-type:advanced;
+}
+
+.extendedDataGrid{
+	/*background-attachment:Embed(source="/preload/welcomes.png");
+	background-image:Embed(source="/preload/welcomes.png");*/
+	content-background-color:#FF0000;
+	background-color:#FF0000;
+	fontFamily: gillsans;
+	font-size:12;
+	font-thickness:-105;
+	font-sharpness:-400;
+	font-anti-alias-type:advanced;
+}
+
